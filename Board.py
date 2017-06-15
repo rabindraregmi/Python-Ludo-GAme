@@ -11,7 +11,7 @@ display_height=600
 display_width=600
 big_rectangle=240
 hole_radius=30
-gameDisplay= pygame.display.set_mode((display_width + 200, display_height))
+gameDisplay= pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption("LUDO FOR EVERYONE")
 gameDisplay.fill(white)
 
