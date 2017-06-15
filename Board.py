@@ -1,4 +1,5 @@
 import pygame
+
 green = (0,255,0)
 blue = (0,0,128)
 white=(255,255,255)
@@ -10,16 +11,14 @@ display_height=600
 display_width=600
 big_rectangle=240
 hole_radius=30
+gameDisplay= pygame.display.set_mode((display_width + 200, display_height))
+pygame.display.set_caption("LUDO FOR EVERYONE")
+gameDisplay.fill(white)
 
 
 def draw_board():
     def uddrawcircle(centre1, centre2, radius1):
         pygame.draw.circle(gameDisplay, white, [centre1, centre2], radius1)
-    global gameDisplay
-    gameDisplay= pygame.display.set_mode((display_width + 200, display_height))
-    pygame.display.update()
-    pygame.display.set_caption("LUDO FOR EVERYONE")
-    gameDisplay.fill(white)
     #RED
     pygame.draw.rect(gameDisplay,red,[0,0,big_rectangle,big_rectangle])
     pygame.draw.polygon(gameDisplay, red,[[big_rectangle, big_rectangle], [big_rectangle,display_height-big_rectangle],[display_width / 2, display_height / 2]])
@@ -79,3 +78,8 @@ def draw_board():
         pygame.draw.line(gameDisplay,black,[start_line2,big_rectangle],[start_line2,display_height-big_rectangle],2)
         pygame.draw.line(gameDisplay,black,[display_width-start_line2,big_rectangle],[display_width-start_line2,display_height-big_rectangle],2)
         start_line2 += big_rectangle/6
+    pygame.display.update()
+
+
+draw_board()
+pygame.image.save(gameDisplay, "board.jpeg")
