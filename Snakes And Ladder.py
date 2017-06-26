@@ -1,36 +1,63 @@
 import pygame,random,time
 from pygame.locals import *
-
-
+from Gatti import Gatti
 pygame.init()
 dice_size = 80
 display_width=600
 white=(255,255,255)
 black=(0,0,0)
 grey=(32,32,32)
+red=(255,0,0)
+green=(0,255,0)
+blue=(0,0,128)
+yellow=(255,255,0)
 radius=20
 ss=pygame.image.load("dice.png")
 dienum=[(0,4),(4,4),(0,8),(0,0),(12,4),(8,4)]
 dienumdict={(0,4):1,(4,4):2,(0,8):3,(0,0):4,(12,4):5,(8,4):6}
 background=pygame.image.load('Snake.jpg')
 gameDisplay=pygame.display.set_mode((600,600))
+red_gatti=Gatti(red,[1000,1000],1)
+blue_gatti=Gatti(blue,[1000,1000],1)
+yellow_gatti=Gatti(yellow,[1000,1000],1)
+green_gatti=Gatti(green,[1000,1000],1)
 
 def dice_roll():
     for i in range(0,15):
         gameDisplay.fill(white)
         gameDisplay.blit(background, [0, 0])
-        pygame.draw.circle(gameDisplay, black, path[position], radius)
+        red_gatti.draw(path[position[0]])
+        yellow_gatti.draw(path1[position[1]])
+        blue_gatti.draw(path2[position[2]])
+        green_gatti.draw(path3[position[3]])
+
         image=ss.subsurface(spritesheet(random.randrange(0,15),random.randrange(1,8)))
-        pygame.time.delay(140)
+        #pygame.time.delay(140)
         gameDisplay.blit(image,[random.randrange(380,420),random.randrange(380,420)])
         pygame.display.update()
+ladders={1:38,4:14,9:31,21:42,28:84,51:67,80:99,72:91}
+snakes={17:7,54:34,62:19,64:60,87:36,98:79,93:73,95:75}
+def checkladder(position_index):
+    num=1
+    try:
+        num=ladders[position_index]
+        print ("num "),num
+        return num
+    except:
+        return 0
+def checksnakes(position_index):
+        try:
+            num=snakes[position_index]
+            return num
+        except:
+            return 0
 def gupdate(position, path):
         print position, path[position]
         pygame.draw.circle(gameDisplay, black, path[position],radius)
         #pygame.draw.circle(gameDisplay, black, path[position],radius)
         #pygame.draw.circle(gameDisplay, white, path[position - 1],radius + 5)
         pygame.display.update()
-        print position, path[position]
+
 def spritesheet(x, y):
     size = (16, 9)
     dimx = 736.0 / 16.0
@@ -42,12 +69,6 @@ def draw_image():
     gameDisplay.blit(background,(0,0))
     gameDisplay.blit(image, [400, 400])
     pygame.display.update()
-def draw(position):
-        print position
-        #pygame.draw.circle(gameDisplay, black, position,radius)
-        #pygame.draw.circle(gameDisplay,(255,255,255), position,radius)
-
-
 
 path_sx=[]
 path_sy=[]
@@ -65,7 +86,13 @@ for i in range(1,101):
         starting_sy-=60
     path_sx.append(starting_sx)
     path_sy.append(starting_sy)
-path = [(x1, y1) for x1, y1 in zip(path_sx, path_sy)]
+path = [(1000,1000)]+[(x1, y1) for x1, y1 in zip(path_sx, path_sy)]
+path1=path[:100]
+path2=path[:100]
+path3=path[:100]
+print path1
+print path2
+print path3
 
 
 
@@ -74,9 +101,8 @@ gameDisplay.blit(background,[0,0])
 image=ss.subsurface(spritesheet(0,4))
 gameDisplay.blit(image,[400,400])
 pygame.display.update()
-position=0
-for i in range (0,100):
-    print i,path[i]
+position=[0,0,0,0]
+turn=0
 print path
 while True:
   for event in pygame.event.get():
@@ -84,17 +110,59 @@ while True:
           pygame.quit()
       if event.type==pygame.KEYDOWN:
         if event.key == pygame.K_SPACE:
+
           dice_roll()
           index_get = random.choice(dienum)
           num = dienumdict[index_get]
           image = ss.subsurface(spritesheet(index_get[0], index_get[1]))
-          print "Num=",num
+          final_pos=position[turn%4]+num
+
+
           for _ in range (1,num+1):
               gameDisplay.blit(background, [0, 0])
               gameDisplay.blit(image, [400, 400])
-              draw(path[position])
-              position+=1
-              gupdate(position,path)
-              pygame.time.delay(120)
-          pygame.display.update()
+              position[turn % 4] += 1
+              red_gatti.draw(path[position[0]])
+              yellow_gatti.draw(path1[position[1]])
+              blue_gatti.draw(path2[position[2]])
+              green_gatti.draw(path3[position[3]])
+              print ("red:"), path[position[0]]
+              print path1[position[1]]
+              print path2[position[2]]
+              print path3[position[3]]
+
+              if turn%4==0:
+                  red_gatti.update(position[turn%4],path)
+              if turn%4==1:
+                yellow_gatti.update(position[turn%4],path1)
+              if turn%4==2:
+                  blue_gatti.update(position[turn%4],path2)
+              if turn%4==3:
+                  green_gatti.update(position[turn%4],path3)
+              pygame.time.delay(200)
+          num=checkladder(position[turn%4])
+          num1=checksnakes(position[turn%4])
+          if num!=0:
+              position[turn%4]=num
+              if turn%4==0:
+                  red_gatti.update(num,path)
+              if turn%4==1:
+                yellow_gatti.update(num,path1)
+              if turn%4==2:
+                  blue_gatti.update(num,path2)
+              if turn%4==3:
+                  green_gatti.update(num,path3)
+          if num1 != 0:
+              position[turn % 4] = num1
+              if turn % 4 == 0:
+                red_gatti.update(num1, path)
+              if turn % 4 == 1:
+                      yellow_gatti.update(num1, path1)
+              if turn % 4 == 2:
+                      blue_gatti.update(num1, path2)
+              if turn % 4 == 3:
+                      green_gatti.update(num1, path3)
+
+        turn+=1
+        pygame.display.update()
 quit()
