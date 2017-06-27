@@ -1,1 +1,1 @@
-# Python-Ludo-GAme
+Python ludo game implementation
