@@ -17,7 +17,12 @@ gameExit = False
 gameOver = False
 gameDisplay= pygame.display.set_mode((display_width + 200, display_height))
 pygame.display.set_caption("LUDO FOR EVERYONE")
-board=pygame.image.load("Board.jpeg")
+gameIcon = pygame.image.load('icon.png')
+pygame.display.set_icon(gameIcon)
+board=pygame.image.load('Board.jpeg')
+
+#Main menu
+
 
 # Message on screen 
 font = pygame.font.SysFont(None, 35)
@@ -27,35 +32,20 @@ def message(msg, color, x_pos, y_pos):
     gameDisplay.blit(screen_text, [x_pos, y_pos])
 
 
-# Code for dice
-dice_size = 80
-x = display_width / 2 - dice_size / 2
-y = display_width / 2 - dice_size / 2
-dot_size = dice_size // 10
-mid = dice_size // 2
-left = top = dice_size // 4
-right = bottom = dice_size - left
+# Code for dice roll
+
 def dice_roll(num):
-    pygame.draw.rect(gameDisplay, grey, (x - 3, y - 3, dice_size + 6, dice_size + 6))
-    pygame.draw.rect(gameDisplay, black, (x - 3, y - 3, dice_size + 6, dice_size + 6))
-    if num == 1:
-        pygame.draw.circle(gameDisplay, white, (x + mid, y + mid), dot_size)
-    else:
-        if num == 2 or num == 3:
-            pygame.draw.circle(gameDisplay, white, (x + right, y + mid), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + left, y + mid), dot_size)
-            if num == 3:
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + mid), dot_size)
-        else:
-            pygame.draw.circle(gameDisplay, white, (x + right, y + top), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + left, y + top), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + left, y + bottom), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + right, y + bottom), dot_size)
-            if num == 5:
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + mid), dot_size)
-            elif num == 6:
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + top), dot_size)
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + bottom), dot_size)
+    for i in xrange(1,7):
+        drawBoard()
+        gameDisplay.blit(pygame.image.load("dice"+str(random.randrange(1,7))+".jpeg"),(display_height/2,display_width/2))
+        pygame.display.update()
+        pygame.time.delay(20)
+        drawBoard()
+        gameDisplay.blit(pygame.image.load("dicemid.jpeg"), (display_height / 2-i*random.randrange(1,50), display_width / 2-random.randrange(1,50)))
+        pygame.display.update()
+        pygame.time.delay(40)
+    drawBoard()
+    gameDisplay.blit(pygame.image.load("dice"+str(num)+".jpeg"), (display_height / 2-40, display_width / 2-40))
     pygame.display.update()
 
 
@@ -128,7 +118,7 @@ def check_move(position, index, dice):
 def check_kill(position, pos_index, dice, startingOne):
     for key in turnPath:
         if turnPath[key]!=turnPath[pos_index]:
-            for var in xrange(4):
+            for var in xrange(n):
                 if (turnPath[pos_index])[position[pos_index][user] + dice] == (turnPath[key])[position[key][var]]:
                     position[key][var] = 0
                     startingOne[key][var] = 0
@@ -179,11 +169,11 @@ turnPath = {0: path_red, 1: path_yellow, 2: path_blue, 3: path_green}
 def gameloop():
     global position
     position=[]
-    for _ in xrange(n):
+    for _ in xrange(4):
         position.append([0 for j in xrange(n)])
     turn = 0
     startingOne = []
-    for i in xrange(n):
+    for i in xrange(4):
         startingOne.append([0 for j in xrange(n)])
     FPS = 5
     clock = pygame.time.Clock()
@@ -243,9 +233,9 @@ def gameloop():
                     if position[turn%4][user]+dice<57:
                         check_kill(position, turn % 4, dice ,startingOne)
                     if checked == 2:
-                        gamePercent[turn%4]+=25
+                        gamePercent[turn%4]+=100/n
                         for anypercent in gamePercent:
-                            if anypercent==100:
+                            if anypercent>=99:
                                 gameOver = True
                                 winner = turn % 4
                     if checked == 0:
