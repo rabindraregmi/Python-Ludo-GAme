@@ -257,7 +257,10 @@ def gameloop(gameDisplay):
                                 elif xxx == 3:
                                     user = 3
                     else:
-                        user=0
+                        try:
+                            user=startingOne[turn%4].index(1)
+                        except:
+                            user=0
                         pygame.time.delay(500)
                     if user>=0:
                         break
