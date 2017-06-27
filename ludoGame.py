@@ -243,18 +243,22 @@ def gameloop(gameDisplay):
                  global user
                  user=-1
                  while True:
-                    for event in pygame.event.get():
-                        if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
-                            mouseposition = pygame.mouse.get_pos()
-                            xxx = check_if_gatti_is_pressed(mouseposition, turn % 4, position)
-                            if xxx == 0:
-                                user = 0
-                            elif xxx == 1:
-                                user = 1
-                            elif xxx == 2:
-                                user = 2
-                            elif xxx == 3:
-                                user = 3
+                    if startingOne[turn%4].count(1)>1 or dice==1:
+                        for event in pygame.event.get():
+                            if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
+                                mouseposition = pygame.mouse.get_pos()
+                                xxx = check_if_gatti_is_pressed(mouseposition, turn % 4, position)
+                                if xxx == 0:
+                                    user = 0
+                                elif xxx == 1:
+                                    user = 1
+                                elif xxx == 2:
+                                    user = 2
+                                elif xxx == 3:
+                                    user = 3
+                    else:
+                        user=0
+                        pygame.time.delay(500)
                     if user>=0:
                         break
                  if dice == 1 or dice == 6:
