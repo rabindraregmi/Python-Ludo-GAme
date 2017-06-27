@@ -1,6 +1,5 @@
 import pygame, time, random
 from pygame.locals import *
-
 pygame.init()
 n = int(raw_input())
 green = (0, 255, 0)
@@ -18,7 +17,12 @@ gameExit = False
 gameOver = False
 gameDisplay= pygame.display.set_mode((display_width + 200, display_height))
 pygame.display.set_caption("LUDO FOR EVERYONE")
-board=pygame.image.load("Board.jpeg")
+gameIcon = pygame.image.load('icon.png')
+pygame.display.set_icon(gameIcon)
+board=pygame.image.load('Board.jpeg')
+
+#Main menu
+
 
 # Message on screen 
 font = pygame.font.SysFont(None, 35)
@@ -28,35 +32,21 @@ def message(msg, color, x_pos, y_pos):
     gameDisplay.blit(screen_text, [x_pos, y_pos])
 
 
-# Code for dice
-dice_size = 80
-x = display_width / 2 - dice_size / 2
-y = display_width / 2 - dice_size / 2
-dot_size = dice_size // 10
-mid = dice_size // 2
-left = top = dice_size // 4
-right = bottom = dice_size - left
+# Code for dice roll
+
 def dice_roll(num):
-    pygame.draw.rect(gameDisplay, grey, (x - 3, y - 3, dice_size + 6, dice_size + 6))
-    pygame.draw.rect(gameDisplay, black, (x - 3, y - 3, dice_size + 6, dice_size + 6))
-    if num == 1:
-        pygame.draw.circle(gameDisplay, white, (x + mid, y + mid), dot_size)
-    else:
-        if num == 2 or num == 3:
-            pygame.draw.circle(gameDisplay, white, (x + right, y + mid), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + left, y + mid), dot_size)
-            if num == 3:
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + mid), dot_size)
-        else:
-            pygame.draw.circle(gameDisplay, white, (x + right, y + top), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + left, y + top), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + left, y + bottom), dot_size)
-            pygame.draw.circle(gameDisplay, white, (x + right, y + bottom), dot_size)
-            if num == 5:
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + mid), dot_size)
-            elif num == 6:
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + top), dot_size)
-                pygame.draw.circle(gameDisplay, white, (x + mid, y + bottom), dot_size)
+    for i in xrange(1,7):
+        drawBoard()
+        gameDisplay.blit(pygame.image.load("dice"+str(random.randrange(1,7))+".jpeg"),(display_height/2,display_width/2))
+        pygame.display.update()
+        pygame.time.delay(20)
+        drawBoard()
+        gameDisplay.blit(pygame.image.load("dicemid.jpeg"), (display_height / 2-i*random.randrange(1,50), display_width / 2-random.randrange(1,50)))
+        pygame.display.update()
+        pygame.time.delay(40)
+    drawBoard()
+    gameDisplay.blit(pygame.image.load("dice"+str(num)+".jpeg"), (display_height / 2-40, display_width / 2-40))
+    pygame.display.update()
 
 
 # Circles/Gatti
@@ -72,31 +62,68 @@ class Gatti(object):
     def update(self, position, path):
         pygame.draw.circle(gameDisplay, black, path[position], self.radius + 5)
         pygame.draw.circle(gameDisplay, self.color, path[position], self.radius)
-        pygame.draw.circle(gameDisplay, white, path[position - 1], self.radius + 5)
+        for circs in xrange(self.no):
+            pygame.draw.circle(gameDisplay,black,path[position],self.radius/10+circs*2)
+        if path[position-1] in exception:
+            for index in xrange(len(exception)):
+                if path[position-1]==exception[index]:
+                    if index<6:
+                        pygame.draw.circle(gameDisplay, red, path[position - 1], self.radius + 5)
+                    elif index<12:
+                        pygame.draw.circle(gameDisplay, yellow, path[position - 1], self.radius + 5)
+                    elif index<18:
+                        pygame.draw.circle(gameDisplay, blue, path[position - 1], self.radius + 5)
+                    else:
+                        pygame.draw.circle(gameDisplay, green, path[position - 1], self.radius + 5)
+                    break
+        else:
+            pygame.draw.circle(gameDisplay, white, path[position-1], self.radius + 5)
         pygame.display.update()
-        print position, path[position]
 
     def draw(self, position):
         pygame.draw.circle(gameDisplay, black, position, self.radius + 5)
         pygame.draw.circle(gameDisplay, self.color, position, self.radius)
+        for circs in xrange(self.no):
+            pygame.draw.circle(gameDisplay,black,position,self.radius/10+circs*2)
+
+    def __str__(self):
+        return  str(self.color)+str(self.no)
 
 
+#Initial gatti position
+def gattiInit(color, coord):
+    gattilist = list()
+    for i in xrange(n):
+        clone = tuple(coord[:])
+        gatti = Gatti(color, clone, i)
+        if i == 0:
+            coord[0] += big_rectangle / 2
+        elif i == 1:
+            coord[1] += big_rectangle / 2
+        elif i == 2:
+            coord[0] -= big_rectangle / 2
+        gattilist.append(gatti)
+    return gattilist
+
+#Check move for entering home
 def check_move(position, index, dice):
-    if position[index] + dice < 57:
+    if position[index][user] + dice < 57:
         return 1
-    if position[index] + dice == 57:
+    if position[index][user] + dice == 57:
         return 2
     else:
         return 0
 
-
+#Check for kills
 def check_kill(position, pos_index, dice, startingOne):
     for key in turnPath:
         if turnPath[key]!=turnPath[pos_index]:
-            if (turnPath[pos_index])[position[pos_index] + dice] == (turnPath[key])[position[key]]:
-                position[key] = 0
-                startingOne[key] = 0
-
+            for var in xrange(n):
+                if (turnPath[pos_index])[position[pos_index][user] + dice] == (turnPath[key])[position[key][var]]:
+                    position[key][var] = 0
+                    startingOne[key][var] = 0
+                
+#Pathing of circles/gatti
 path_x = [60]
 start_path_x = 60
 path_y = [260]
@@ -124,48 +151,46 @@ for i in xrange(2, 53):
         start_path_y -= big_rectangle / 6
     path_x.append(start_path_x)
     path_y.append(start_path_y)
-
 path_red = [(x1, y1) for x1, y1 in zip(path_x, path_y)]
-path_yellow = [(1000, 1000)] + path_red[13:] + path_red[:13] + [(300, 60), (300, 100), (300, 140), (300, 180),
-                                                                (300, 220), (300, 260)]
-path_blue = [(1000, 1000)] + path_red[26:] + path_red[:26] + [(540, 300), (500, 300), (460, 300), (420, 300),
-                                                              (380, 300), (340, 300)]
-path_green = [(1000, 1000)] + path_red[39:] + path_red[:39] + [(300, 540), (300, 500), (300, 460), (300, 420),
-                                                               (300, 380), (300, 340)]
-path_red = [(1000, 1000)] + path_red + [(60, 300), (100, 300), (140, 300), (180, 300), (220, 300), (260, 300)]
-del path_red[52], path_green[52], path_blue[52], path_yellow[52]
-print path_red
-print path_yellow
-print path_blue
-print path_green
+path_yellow =path_red[13:] + path_red[:13] + [(300, 60), (300, 100), (300, 140), (300, 180),
+                                               (300, 220), (300, 260),(1000,1000)]
+path_blue = path_red[26:] + path_red[:26] + [(540, 300), (500, 300), (460, 300), (420, 300),
+                                                                      (380, 300), (340, 300),(1000,1000)]
+path_green =path_red[39:] + path_red[:39] + [(300, 540), (300, 500), (300, 460), (300, 420),
+                                                                       (300, 380), (300, 340),(1000,1000)]
+path_red = path_red + [(60, 300), (100, 300), (140, 300), (180, 300), (220, 300), (260, 300),(1000,1000)]
+del path_red[51], path_green[51], path_blue[51], path_yellow[51]
+exception=[path_red[0]]+path_red[51:]+[path_red[13]]+path_yellow[51:]+[path_red[26]]+path_blue[51:]+[path_red[39]]+path_green[51:]
 WIDTH = 40
 turnColor = {0: 'Red', 1: 'Yellow', 2: 'Blue', 3: 'Green'}
 turnPath = {0: path_red, 1: path_yellow, 2: path_blue, 3: path_green}
 
-
+#Game loop fxn
 def gameloop():
-    position = [0, 0, 0, 0]
+    global position
+    position=[]
+    for _ in xrange(4):
+        position.append([0 for j in xrange(n)])
     turn = 0
-    startingOne = [0, 0, 0, 0]
-    FPS = 15
+    startingOne = []
+    for i in xrange(4):
+        startingOne.append([0 for j in xrange(n)])
+    FPS = 5
     clock = pygame.time.Clock()
     gameExit = False
+    gamePercent=[0,0,0,0]
     gameOver = False
-    gameDisplay.blit(board, (0, 0))
-    red_gatti.draw(path_red[position[0]])
-    yellow_gatti.draw(path_yellow[position[1]])
-    blue_gatti.draw(path_blue[position[2]])
-    green_gatti.draw(path_green[position[3]])
+    drawBoard()
     # Main game loop
     while not gameExit:
         chance = 1
+        drawBoard()
         while gameOver == True:
             gameDisplay.fill(white)
             message("Game Over", black, display_height / 2, display_width / 2)
             message("Winner:" + turnColor[winner], black, display_width / 2, display_height / 2 - 30)
             message("Press Q to Quit and C to play again", blue, display_width / 2, display_height / 2 + 30)
             pygame.display.update()
-
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:
@@ -183,61 +208,81 @@ def gameloop():
                 gameExit = True
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 dice = random.randrange(1, 7)
+                dice_roll(dice)
+                global user
+                user=-1
+                while True:
+                    for event in pygame.event.get():
+                        if event.type == pygame.KEYDOWN:
+                            if event.key ==pygame.K_0:
+                                user=0
+                            elif event.key ==pygame.K_1:
+                                user=1
+                            elif event.key ==pygame.K_2:
+                                user=2
+                            elif event.key ==pygame.K_3:
+                                user=3
+                    if user>=0:
+                        break
                 if dice == 1 or dice == 6:
                     if dice == 1:
-                        startingOne[turn % 4] += 1
+                        startingOne[turn % 4][user] += 1
                     chance += 1
-                dice_roll(dice)
-                if startingOne[turn % 4] >= 1:
-
+                if startingOne[turn % 4][user] >= 1:
                     checked = check_move(position, turn % 4, dice)
-                    check_kill(position, turn % 4, dice ,startingOne)
-                    print checked
+                    if position[turn%4][user]+dice<57:
+                        check_kill(position, turn % 4, dice ,startingOne)
+                    if checked == 2:
+                        gamePercent[turn%4]+=100/n
+                        for anypercent in gamePercent:
+                            if anypercent>=99:
+                                gameOver = True
+                                winner = turn % 4
                     if checked == 0:
                         message("Invalid Move", black, display_width + 15, display_height / 2 - 40)
                         if dice != 1 and dice != 6:
                             turn += 1
                         break
-                    elif checked == 2:
-                        gameOver = True
-                        winner = turn % 4
-                        continue
-
                     else:
                         for _ in xrange(1, dice + 1):
                             gameDisplay.blit(board, (0, 0))
-                            dice_roll(dice)
-                            red_gatti.draw(path_red[position[0]])
-                            yellow_gatti.draw(path_yellow[position[1]])
-                            blue_gatti.draw(path_blue[position[2]])
-                            green_gatti.draw(path_green[position[3]])
-                            position[turn % 4] += 1
+                            for u in range(n):
+                                red_gatti[u].draw(([red_gatti[u].pos]+path_red)[position[0][u]])
+                                yellow_gatti[u].draw(([yellow_gatti[u].pos]+ path_yellow)[position[1][u]])
+                                blue_gatti[u].draw(([blue_gatti[u].pos]+path_blue)[position[2][u]])
+                                green_gatti[u].draw(([green_gatti[u].pos]+path_green)[position[3][u]])
+                            position[turn % 4][user] += 1
                             if turn % 4 == 0:
-                                red_gatti.update(position[turn % 4], path_red)
+                                red_gatti[user].update(position[turn % 4][user], [red_gatti[user].pos]+path_red)
                             elif turn % 4 == 1:
-                                yellow_gatti.update(position[turn % 4], path_yellow)
+                                yellow_gatti[user].update(position[turn % 4][user],[yellow_gatti[user].pos]+ path_yellow)
                             elif turn % 4 == 2:
-                                blue_gatti.update(position[turn % 4], path_blue)
+                                blue_gatti[user].update(position[turn % 4][user], [blue_gatti[user].pos]+path_blue)
                             else:
-                                green_gatti.update(position[turn % 4], path_green)
-                            pygame.time.delay(120)
+                                green_gatti[user].update(position[turn % 4][user], [green_gatti[user].pos]+path_green)
+                            pygame.time.delay(150)
+                            pygame.display.update()
                 if chance == 1:
                     turn += 1
 
         pygame.display.update()
         clock.tick(FPS)
 
+#Draw current gatti positions+board
+def drawBoard():
+    gameDisplay.blit(board, (0, 0))
+    for p in xrange(n):
+        red_gatti[p].draw(([red_gatti[p].pos] + path_red)[position[0][p]])
+        yellow_gatti[p].draw(([yellow_gatti[p].pos] + path_yellow)[position[1][p]])
+        blue_gatti[p].draw(([blue_gatti[p].pos] + path_blue)[position[2][p]])
+        green_gatti[p].draw(([green_gatti[p].pos] + path_green)[position[3][p]])
 
 
 
-red_gatti = Gatti(red, [big_rectangle / 4, big_rectangle / 4], n)
-green_gatti = Gatti(green, [big_rectangle / 4, display_height - 3 * big_rectangle / 4], n)
-yellow_gatti = Gatti(yellow, [display_width - 3 * big_rectangle / 4, big_rectangle / 4], n)
-blue_gatti = Gatti(blue, [display_width - 3 * big_rectangle / 4, display_height - 3 * big_rectangle / 4], n)
-path_red[0]=(big_rectangle / 4, big_rectangle / 4)
-path_green[0]=(big_rectangle / 4, display_height - 3 * big_rectangle / 4)
-path_yellow[0]=(display_width - 3 * big_rectangle / 4, big_rectangle / 4)
-path_blue[0]=(display_width - 3 * big_rectangle / 4, display_height - 3 * big_rectangle / 4)
+red_gatti=gattiInit(red,[big_rectangle / 4, big_rectangle / 4])
+green_gatti = gattiInit(green, [big_rectangle / 4, display_height - 3 * big_rectangle / 4])
+yellow_gatti = gattiInit(yellow, [display_width - 3 * big_rectangle / 4, big_rectangle / 4])
+blue_gatti = gattiInit(blue, [display_width - 3 * big_rectangle / 4, display_height - 3 * big_rectangle / 4])
 gameloop()
 pygame.display.quit()
 quit()
