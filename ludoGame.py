@@ -232,7 +232,7 @@ def gameloop(gameDisplay):
                                 gameOver = True
                                 winner = turn % 4
                     if checked == 0:
-                        message("Invalid Move", black, display_width + 15, display_height / 2 - 40)
+                        message(gameDisplay,"Invalid Move", black, display_width + 15, display_height / 2 - 40)
                         if dice != 1 and dice != 6:
                             turn += 1
                         break
