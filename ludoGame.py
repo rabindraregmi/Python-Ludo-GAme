@@ -14,6 +14,7 @@ display_height = 600
 display_width = 600
 big_rectangle = 240
 hole_radius = 30
+dice_size=80
 gameExit = False
 gameOver = False
 # Pathing of circles/gatti
@@ -156,7 +157,39 @@ def check_kill(position, pos_index, dice, startingOne):
                 if (turnPath[pos_index])[position[pos_index][user] + dice] == (turnPath[key])[position[key][var]]:
                     position[key][var] = 0
                     startingOne[key][var] = 0
-                
+
+def check_if_gatti_is_pressed(mouseposition, turn, position):
+                    turnGatti = {0: red_gatti, 1: yellow_gatti, 2: blue_gatti, 3: green_gatti}
+                    value = 10
+                    if position[turn][0] == 0:
+                        m1, n1 = turnGatti[turn][0].pos
+                    else:
+                        m1, n1 = turnPath[turn][position[turn][0] - 1]
+
+                    if position[turn][1] == 0:
+                        m2, n2 = turnGatti[turn][1].pos
+                    else:
+                        m2, n2 = turnPath[turn][position[turn][1] - 1]
+
+                    if position[turn][2] == 0:
+                        m3, n3 = turnGatti[turn][2].pos
+                    else:
+                        m3, n3 = turnPath[turn][position[turn][2] - 1]
+
+                    if position[turn][3] == 0:
+                        m4, n4 = turnGatti[turn][3].pos
+                    else:
+                        m4, n4 = turnPath[turn][position[turn][3] - 1]
+                    mouse1, mouse2 = mouseposition
+                    if (mouse1 > m1 - 20 and mouse1 < m1 + 20) and (mouse2 > n1 - 20 and mouse2 < n1 + 20):
+                        return 0
+                    if (mouse1 > m2 - 20 and mouse1 < m2 + 20) and (mouse2 > n2 - 20 and mouse2 < n2 + 20):
+                        return 1
+                    if (mouse1 > m3 - 20 and mouse1 < m3 + 20) and (mouse2 > n3 - 20 and mouse2 < n3 + 20):
+                        return 2
+                    if (mouse1 > m4 - 20 and mouse1 < m4 + 20) and (mouse2 > n4 - 20 and mouse2 < n4 + 20):
+                        return 3
+
 
 #Game loop fxn
 def gameloop(gameDisplay):
@@ -200,28 +233,35 @@ def gameloop(gameDisplay):
             if event.type == pygame.QUIT:
                 gameExit = True
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                dice = random.randrange(1, 7)
-                dice_roll(gameDisplay,dice)
-                global user
-                user=-1
-                while True:
+                mx, my = pygame.mouse.get_pos()
+                print (mx)
+                print ((display_width - dice_size) / 2) - 3
+                if (mx > (((display_width - dice_size) / 2) - 3) and mx < ((((display_width - dice_size) / 2) - 3) + dice_size)) and \
+                            (my > (((display_width - dice_size) / 2) - 3) and my < ((((display_width - dice_size) / 2) - 3) + dice_size)):
+                 dice = random.randrange(1, 7)
+                 dice_roll(gameDisplay,dice)
+                 global user
+                 user=-1
+                 while True:
                     for event in pygame.event.get():
-                        if event.type == pygame.KEYDOWN:
-                            if event.key ==pygame.K_0:
-                                user=0
-                            elif event.key ==pygame.K_1:
-                                user=1
-                            elif event.key ==pygame.K_2:
-                                user=2
-                            elif event.key ==pygame.K_3:
-                                user=3
+                        if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1):
+                            mouseposition = pygame.mouse.get_pos()
+                            xxx = check_if_gatti_is_pressed(mouseposition, turn % 4, position)
+                            if xxx == 0:
+                                user = 0
+                            elif xxx == 1:
+                                user = 1
+                            elif xxx == 2:
+                                user = 2
+                            elif xxx == 3:
+                                user = 3
                     if user>=0:
                         break
-                if dice == 1 or dice == 6:
+                 if dice == 1 or dice == 6:
                     if dice == 1:
                         startingOne[turn % 4][user] += 1
                     chance += 1
-                if startingOne[turn % 4][user] >= 1:
+                 if startingOne[turn % 4][user] >= 1:
                     checked = check_move(position, turn % 4, dice)
                     if position[turn%4][user]+dice<57:
                         check_kill(position, turn % 4, dice ,startingOne)
@@ -255,7 +295,7 @@ def gameloop(gameDisplay):
                                 green_gatti[user].update(gameDisplay,position[turn % 4][user], [green_gatti[user].pos]+path_green)
                             pygame.time.delay(150)
                             pygame.display.update()
-                if chance == 1:
+                 if chance == 1:
                     turn += 1
 
         pygame.display.update()
