@@ -1,6 +1,6 @@
 import pygame, time, random
 from pygame.locals import *
-
+n=4
 pygame.init()
 green = (0, 255, 0)
 blue = (0, 0, 128)
@@ -9,7 +9,6 @@ black = (0, 0, 0)
 red = (255, 0, 0)
 yellow = (255, 255, 0)
 grey = (32, 32, 32)
-n=4
 display_height = 600
 display_width = 600
 big_rectangle = 240
@@ -161,34 +160,17 @@ def check_kill(position, pos_index, dice, startingOne):
 def check_if_gatti_is_pressed(mouseposition, turn, position):
                     turnGatti = {0: red_gatti, 1: yellow_gatti, 2: blue_gatti, 3: green_gatti}
                     value = 10
-                    if position[turn][0] == 0:
-                        m1, n1 = turnGatti[turn][0].pos
-                    else:
-                        m1, n1 = turnPath[turn][position[turn][0] - 1]
-
-                    if position[turn][1] == 0:
-                        m2, n2 = turnGatti[turn][1].pos
-                    else:
-                        m2, n2 = turnPath[turn][position[turn][1] - 1]
-
-                    if position[turn][2] == 0:
-                        m3, n3 = turnGatti[turn][2].pos
-                    else:
-                        m3, n3 = turnPath[turn][position[turn][2] - 1]
-
-                    if position[turn][3] == 0:
-                        m4, n4 = turnGatti[turn][3].pos
-                    else:
-                        m4, n4 = turnPath[turn][position[turn][3] - 1]
+                    m1=[0,0,0,0]
+                    n1=[0,0,0,0]
+                    for var in xrange(n):
+                        if position[turn][var] == 0:
+                            m1[var], n1[var] = turnGatti[turn][var].pos
+                        else:
+                            m1[var], n1[var] = turnPath[turn][position[turn][var] - 1]
                     mouse1, mouse2 = mouseposition
-                    if (mouse1 > m1 - 20 and mouse1 < m1 + 20) and (mouse2 > n1 - 20 and mouse2 < n1 + 20):
-                        return 0
-                    if (mouse1 > m2 - 20 and mouse1 < m2 + 20) and (mouse2 > n2 - 20 and mouse2 < n2 + 20):
-                        return 1
-                    if (mouse1 > m3 - 20 and mouse1 < m3 + 20) and (mouse2 > n3 - 20 and mouse2 < n3 + 20):
-                        return 2
-                    if (mouse1 > m4 - 20 and mouse1 < m4 + 20) and (mouse2 > n4 - 20 and mouse2 < n4 + 20):
-                        return 3
+                    for var2 in xrange(n):
+                        if (mouse1 > m1[var2] - 20 and mouse1 < m1[var2] + 20) and (mouse2 > n1[var2] - 20 and mouse2 < n1[var2] + 20):
+                            return var2
 
 
 #Game loop fxn
@@ -266,7 +248,7 @@ def gameloop(gameDisplay):
                         break
                  if dice == 1 or dice == 6:
                     if dice == 1:
-                        startingOne[turn % 4][user] += 1
+                        startingOne[turn % 4][user] = 1
                     chance += 1
                  if startingOne[turn % 4][user] >= 1:
                     checked = check_move(position, turn % 4, dice)
