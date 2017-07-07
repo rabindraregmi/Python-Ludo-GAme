@@ -12,8 +12,8 @@ def selected(rect):
 
 
 def ludoPrompt():
-    gameDisplay.blit(bg,(0,0))
-    gameDisplay.blit(gattiselect,(10,100))
+    gameDisplay.blit(bg2,(0,0))
+    gameDisplay.blit(gattiselect,(60,370))
     pygame.display.update()
     flag=0
     while True:
@@ -28,6 +28,8 @@ def ludoPrompt():
                     ludoGame.n=3
                 elif event.key==pygame.K_4:
                     ludoGame.n=4
+                elif event.key==pygame.K_BACKSPACE:
+                    return 0
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
@@ -35,9 +37,44 @@ def ludoPrompt():
             break
 
 
+def gameRules():
+    with open('Instructions.txt','r') as filevar:
+        text=filevar.readlines()
+    text=[x.strip() for x in text]
+    font = pygame.font.SysFont("microsoftsansserif", 16)
+    gameDisplay.blit(bg3,(0,0))
+    y=0
+    for line in text:
+        color=(255,255,255)
+        if y==0 or y==21:
+            color=(0,200,100)
+        elif y==18 or y==33:
+            color=(200,0,0)
+        textOnScreen = font.render(line, True, color)
+        gameDisplay.blit(textOnScreen,(5,y*17))
+        y+=1
+    backspace=False
+    while not backspace:
+        for event in pygame.event.get():
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_BACKSPACE:
+                    backspace=True
+            if event.type==pygame.MOUSEBUTTONDOWN:
+                backspace=True
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                quit()
+        pygame.display.update()    
+
+    
+    
+    
+
+
 bg = pygame.image.load('icons\menubg1.jpg')
 bg = pygame.transform.scale(bg, (600, 600))
 bg2=pygame.transform.scale(pygame.image.load(os.path.join('icons','menubg2.jpg')),(600,600))
+bg3=pygame.transform.scale(pygame.image.load(os.path.join('icons','menubg3.jpg')),(600,600))
 play=pygame.transform.scale(pygame.image.load(os.path.join('icons','play.png')),(120,50))
 rules=pygame.transform.scale(pygame.image.load(os.path.join('icons','rules.png')),(120,50))
 quit_=pygame.transform.scale(pygame.image.load(os.path.join('icons','quit.png')),(120,50))
@@ -47,7 +84,7 @@ opt1=pygame.transform.scale(pygame.image.load(os.path.join('icons','opt1.png')),
 opt2=pygame.transform.scale(pygame.image.load(os.path.join('icons','opt2.png')),(200,30))
 gattiselect=pygame.transform.scale(pygame.image.load(os.path.join('icons','message.png')),(450,50))
 while True:
-
+    back=False
     gameDisplay.blit(bg,(0,0))
     gameDisplay.blit(play,(10,10))
     gameDisplay.blit(rules,(10,110))
@@ -74,16 +111,24 @@ while True:
                         if event2.type == pygame.QUIT:
                             pygame.quit()
                             quit()
-                        if event2.type == pygame.MOUSEBUTTONDOWN:
+                        elif event2.type == pygame.MOUSEBUTTONDOWN:
                             if (newmx >= 20 and newmx <= 220) and (newmy >= 20 and newmy <= 220):
-                                ludoPrompt()
-                                ludoGame.main()
+                                if ludoPrompt()==0:
+                                    back=True
+                                    break
+                                else:
+                                    ludoGame.main()
                             elif (newmx >= 360 and newmx <= 560) and (newmy >= 20 and newmy <= 220):
                                 snakesAndLadders.main()
+                        elif event2.type == pygame.KEYDOWN:
+                            if event2.key == pygame.K_BACKSPACE:
+                                back=True
+                    if back==True:
+                        break
                     pygame.display.update()
 
             elif (mx >= 10 and mx <= 130) and (my >= 110 and my <= 160):
-                rules()
+                gameRules()
             elif (mx >= 10 and mx <= 130) and (my >= 210 and my <= 260):
                 pygame.quit()
                 quit()
