@@ -1,288 +1,154 @@
-import pygame, time, random
-from pygame.locals import *
-pygame.init()
-n = int(raw_input())
-green = (0, 255, 0)
-blue = (0, 0, 128)
-white = (255, 255, 255)
-black = (0, 0, 0)
-red = (255, 0, 0)
-yellow = (255, 255, 0)
-grey = (32, 32, 32)
-display_height = 600
-display_width = 600
-big_rectangle = 240
-hole_radius = 30
-gameExit = False
-gameOver = False
-gameDisplay= pygame.display.set_mode((display_width + 200, display_height))
-pygame.display.set_caption("LUDO FOR EVERYONE")
-gameIcon = pygame.image.load('icon.png')
-pygame.display.set_icon(gameIcon)
-board=pygame.image.load('Board.jpeg')
-
-#Main menu
+import pygame
+import ludoGame,snakesAndLadders
+import os
+yellow=(255,255,0)
 
 
-# Message on screen 
-font = pygame.font.SysFont(None, 35)
-def message(msg, color, x_pos, y_pos):
-    pygame.draw.rect(gameDisplay, white, [display_width + 10, 0, 190, display_height])
-    screen_text = font.render(msg, True, color)
-    gameDisplay.blit(screen_text, [x_pos, y_pos])
-
-
-# Code for dice roll
-
-def dice_roll(num):
-    for i in xrange(1,7):
-        drawBoard()
-        gameDisplay.blit(pygame.image.load("dice"+str(random.randrange(1,7))+".jpeg"),(display_height/2,display_width/2))
-        pygame.display.update()
-        pygame.time.delay(20)
-        drawBoard()
-        gameDisplay.blit(pygame.image.load("dicemid.jpeg"), (display_height / 2-i*random.randrange(1,50), display_width / 2-random.randrange(1,50)))
-        pygame.display.update()
-        pygame.time.delay(40)
-    drawBoard()
-    gameDisplay.blit(pygame.image.load("dice"+str(num)+".jpeg"), (display_height / 2-40, display_width / 2-40))
+def selected(gameDisplay,rect):
+    pygame.draw.rect(gameDisplay,yellow,rect,5)
     pygame.display.update()
 
 
-# Circles/Gatti
-class Gatti(object):
-    radius = 10
-
-    def __init__(self, color, pos, no):
-        self.color = color
-        self.pos = pos
-        self.no = no
-
-
-    def update(self, position, path):
-        pygame.draw.circle(gameDisplay, black, path[position], self.radius + 5)
-        pygame.draw.circle(gameDisplay, self.color, path[position], self.radius)
-        for circs in xrange(self.no):
-            pygame.draw.circle(gameDisplay,black,path[position],self.radius/10+circs*2)
-        if path[position-1] in exception:
-            for index in xrange(len(exception)):
-                if path[position-1]==exception[index]:
-                    if index<6:
-                        pygame.draw.circle(gameDisplay, red, path[position - 1], self.radius + 5)
-                    elif index<12:
-                        pygame.draw.circle(gameDisplay, yellow, path[position - 1], self.radius + 5)
-                    elif index<18:
-                        pygame.draw.circle(gameDisplay, blue, path[position - 1], self.radius + 5)
-                    else:
-                        pygame.draw.circle(gameDisplay, green, path[position - 1], self.radius + 5)
-                    break
-        else:
-            pygame.draw.circle(gameDisplay, white, path[position-1], self.radius + 5)
-        pygame.display.update()
-
-    def draw(self, position):
-        pygame.draw.circle(gameDisplay, black, position, self.radius + 5)
-        pygame.draw.circle(gameDisplay, self.color, position, self.radius)
-        for circs in xrange(self.no):
-            pygame.draw.circle(gameDisplay,black,position,self.radius/10+circs*2)
-
-    def __str__(self):
-        return  str(self.color)+str(self.no)
-
-
-#Initial gatti position
-def gattiInit(color, coord):
-    gattilist = list()
-    for i in xrange(n):
-        clone = tuple(coord[:])
-        gatti = Gatti(color, clone, i)
-        if i == 0:
-            coord[0] += big_rectangle / 2
-        elif i == 1:
-            coord[1] += big_rectangle / 2
-        elif i == 2:
-            coord[0] -= big_rectangle / 2
-        gattilist.append(gatti)
-    return gattilist
-
-#Check move for entering home
-def check_move(position, index, dice):
-    if position[index][user] + dice < 57:
-        return 1
-    if position[index][user] + dice == 57:
-        return 2
-    else:
-        return 0
-
-#Check for kills
-def check_kill(position, pos_index, dice, startingOne):
-    for key in turnPath:
-        if turnPath[key]!=turnPath[pos_index]:
-            for var in xrange(n):
-                if (turnPath[pos_index])[position[pos_index][user] + dice] == (turnPath[key])[position[key][var]]:
-                    position[key][var] = 0
-                    startingOne[key][var] = 0
-                
-#Pathing of circles/gatti
-path_x = [60]
-start_path_x = 60
-path_y = [260]
-start_path_y = 260
-for i in xrange(2, 53):
-    if (i > 1 and i <= 5) or (i > 19 and i <= 24) or (i > 11 and i <= 13):
-        start_path_x += big_rectangle / 6
-    if (i > 6 and i <= 11) or (i > 39 and i <= 44) or (i > 50 and i <= 53):
-        start_path_y -= big_rectangle / 6
-    if i == 6:
-        start_path_x += big_rectangle / 6
-        start_path_y -= big_rectangle / 6
-    if (i > 13 and i <= 18) or (i > 32 and i <= 37) or (i > 24 and i <= 26):
-        start_path_y += big_rectangle / 6
-    if i == 19:
-        start_path_x += big_rectangle / 6
-        start_path_y += big_rectangle / 6
-    if (i > 26 and i <= 31) or (i > 37 and i <= 39) or (i > 45 and i <= 50):
-        start_path_x -= big_rectangle / 6
-    if i == 32:
-        start_path_x -= big_rectangle / 6
-        start_path_y += big_rectangle / 6
-    if i == 45:
-        start_path_x -= big_rectangle / 6
-        start_path_y -= big_rectangle / 6
-    path_x.append(start_path_x)
-    path_y.append(start_path_y)
-path_red = [(x1, y1) for x1, y1 in zip(path_x, path_y)]
-path_yellow =path_red[13:] + path_red[:13] + [(300, 60), (300, 100), (300, 140), (300, 180),
-                                               (300, 220), (300, 260),(1000,1000)]
-path_blue = path_red[26:] + path_red[:26] + [(540, 300), (500, 300), (460, 300), (420, 300),
-                                                                      (380, 300), (340, 300),(1000,1000)]
-path_green =path_red[39:] + path_red[:39] + [(300, 540), (300, 500), (300, 460), (300, 420),
-                                                                       (300, 380), (300, 340),(1000,1000)]
-path_red = path_red + [(60, 300), (100, 300), (140, 300), (180, 300), (220, 300), (260, 300),(1000,1000)]
-del path_red[51], path_green[51], path_blue[51], path_yellow[51]
-exception=[path_red[0]]+path_red[51:]+[path_red[13]]+path_yellow[51:]+[path_red[26]]+path_blue[51:]+[path_red[39]]+path_green[51:]
-WIDTH = 40
-turnColor = {0: 'Red', 1: 'Yellow', 2: 'Blue', 3: 'Green'}
-turnPath = {0: path_red, 1: path_yellow, 2: path_blue, 3: path_green}
-
-#Game loop fxn
-def gameloop():
-    global position
-    position=[]
-    for _ in xrange(4):
-        position.append([0 for j in xrange(n)])
-    turn = 0
-    startingOne = []
-    for i in xrange(4):
-        startingOne.append([0 for j in xrange(n)])
-    FPS = 5
-    clock = pygame.time.Clock()
-    gameExit = False
-    gamePercent=[0,0,0,0]
-    gameOver = False
-    drawBoard()
-    # Main game loop
-    while not gameExit:
-        chance = 1
-        drawBoard()
-        while gameOver == True:
-            gameDisplay.fill(white)
-            message("Game Over", black, display_height / 2, display_width / 2)
-            message("Winner:" + turnColor[winner], black, display_width / 2, display_height / 2 - 30)
-            message("Press Q to Quit and C to play again", blue, display_width / 2, display_height / 2 + 30)
-            pygame.display.update()
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
-                        gameExit = True
-                        gameOver = False
-                    if event.key == pygame.K_c:
-                        gameloop()
-
-                    else:
-
-                        break
+def ludoPrompt(gameDisplay,bg,msg):
+    gameDisplay.blit(bg,(0,0))
+    gameDisplay.blit(msg,(60,370))
+    pygame.display.update()
+    while True:
         for event in pygame.event.get():
-            message('TURN : ' + turnColor[turn % 4], red, display_width + 15, display_height / 2)
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_1:
+                    return 1
+                elif event.key==pygame.K_2:
+                    return 2
+                elif event.key==pygame.K_3:
+                    return 3
+                elif event.key==pygame.K_4:
+                    return 4
+                elif event.key==pygame.K_BACKSPACE:
+                    return 0
             if event.type == pygame.QUIT:
-                gameExit = True
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                dice = random.randrange(1, 7)
-                dice_roll(dice)
-                global user
-                user=-1
-                while True:
-                    for event in pygame.event.get():
-                        if event.type == pygame.KEYDOWN:
-                            if event.key ==pygame.K_0:
-                                user=0
-                            elif event.key ==pygame.K_1:
-                                user=1
-                            elif event.key ==pygame.K_2:
-                                user=2
-                            elif event.key ==pygame.K_3:
-                                user=3
-                    if user>=0:
-                        break
-                if dice == 1 or dice == 6:
-                    if dice == 1:
-                        startingOne[turn % 4][user] += 1
-                    chance += 1
-                if startingOne[turn % 4][user] >= 1:
-                    checked = check_move(position, turn % 4, dice)
-                    if position[turn%4][user]+dice<57:
-                        check_kill(position, turn % 4, dice ,startingOne)
-                    if checked == 2:
-                        gamePercent[turn%4]+=100/n
-                        for anypercent in gamePercent:
-                            if anypercent>=99:
-                                gameOver = True
-                                winner = turn % 4
-                    if checked == 0:
-                        message("Invalid Move", black, display_width + 15, display_height / 2 - 40)
-                        if dice != 1 and dice != 6:
-                            turn += 1
-                        break
-                    else:
-                        for _ in xrange(1, dice + 1):
-                            gameDisplay.blit(board, (0, 0))
-                            for u in range(n):
-                                red_gatti[u].draw(([red_gatti[u].pos]+path_red)[position[0][u]])
-                                yellow_gatti[u].draw(([yellow_gatti[u].pos]+ path_yellow)[position[1][u]])
-                                blue_gatti[u].draw(([blue_gatti[u].pos]+path_blue)[position[2][u]])
-                                green_gatti[u].draw(([green_gatti[u].pos]+path_green)[position[3][u]])
-                            position[turn % 4][user] += 1
-                            if turn % 4 == 0:
-                                red_gatti[user].update(position[turn % 4][user], [red_gatti[user].pos]+path_red)
-                            elif turn % 4 == 1:
-                                yellow_gatti[user].update(position[turn % 4][user],[yellow_gatti[user].pos]+ path_yellow)
-                            elif turn % 4 == 2:
-                                blue_gatti[user].update(position[turn % 4][user], [blue_gatti[user].pos]+path_blue)
-                            else:
-                                green_gatti[user].update(position[turn % 4][user], [green_gatti[user].pos]+path_green)
-                            pygame.time.delay(150)
-                            pygame.display.update()
-                if chance == 1:
-                    turn += 1
+                pygame.quit()
+                quit()
 
+
+
+def gameRules(gameDisplay,bg):
+    with open('Instructions.txt','r') as filevar:
+        text=filevar.readlines()
+    text=[x.strip() for x in text]
+    font = pygame.font.SysFont("microsoftsansserif", 16)
+    gameDisplay.blit(bg,(0,0))
+    y=0
+    for line in text:
+        color=(255,255,255)
+        if y==0 or y==21:
+            color=(0,200,100)
+        elif y==18 or y==33:
+            color=(200,0,0)
+        textOnScreen = font.render(line, True, color)
+        gameDisplay.blit(textOnScreen,(5,y*17))
+        y+=1
+    backspace=False
+    while not backspace:
+        for event in pygame.event.get():
+            if event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_BACKSPACE:
+                    backspace=True
+            if event.type==pygame.MOUSEBUTTONDOWN:
+                backspace=True
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                quit()
+        pygame.display.update()    
+
+    
+    
+    
+def main():
+    pygame.init()
+    gameDisplay= pygame.display.set_mode((600, 600))
+    pygame.display.set_caption("LUDO GAME")
+    bg1 = pygame.image.load('icons/menubg.jpg')
+    bg1 = pygame.transform.scale(bg1, (600, 600))
+    bg2=pygame.transform.scale(pygame.image.load(os.path.join('icons','menubg1.jpg')),(600,600))
+    bg3=pygame.transform.scale(pygame.image.load(os.path.join('icons','menubg2.jpg')),(600,600))
+    play=pygame.transform.scale(pygame.image.load(os.path.join('icons','play.png')),(120,50))
+    rules=pygame.transform.scale(pygame.image.load(os.path.join('icons','Rules.png')),(120,50))
+    quit_=pygame.transform.scale(pygame.image.load(os.path.join('icons','quit.png')),(120,50))
+    img1=pygame.transform.scale(pygame.image.load(os.path.join('Board','Board.jpeg')),(200,200))
+    img2=pygame.transform.scale(pygame.image.load(os.path.join('Board','Board2.jpg')),(200,200))
+    opt1=pygame.transform.scale(pygame.image.load(os.path.join('icons','opt1.png')),(120,30))
+    opt2=pygame.transform.scale(pygame.image.load(os.path.join('icons','opt2.png')),(200,30))
+    gattiselect = pygame.transform.scale(pygame.image.load(os.path.join('icons', 'message.png')), (450, 50))
+    playerselect = pygame.transform.scale(pygame.image.load(os.path.join('icons', 'message.png')), (450, 50))
+
+    while True:
+        back=False
+        gameDisplay.blit(bg1,(0,0))
+        gameDisplay.blit(play,(10,10))
+        gameDisplay.blit(rules,(10,110))
+        gameDisplay.blit(quit_,(10,210))
+        mx, my = pygame.mouse.get_pos()
+        if (mx>=10 and mx<=130) and (my>=10 and my<=60):
+            selected(gameDisplay,[10,10,120,50])
+        elif (mx >= 10 and mx <= 130) and (my >= 110 and my <= 160):
+            selected(gameDisplay,[10, 110, 120, 50])
+        elif (mx >= 10 and mx <= 130) and (my >= 210 and my <= 260):
+            selected(gameDisplay,[10, 210, 120, 50])
+        for event in pygame.event.get():
+            if event.type==pygame.MOUSEBUTTONDOWN:
+                if (mx >= 10 and mx <= 130) and (my >= 10 and my <= 60):
+                    gameDisplay.blit(bg2, (0, 0))
+                    gameDisplay.blit(img1, (20, 20))
+                    gameDisplay.blit(img2, (360, 20))
+                    gameDisplay.blit(opt1,(20,230))
+                    gameDisplay.blit(opt2,(360,230))
+                    pygame.display.update()
+                    while True:
+                        newmx, newmy = pygame.mouse.get_pos()
+                        for event2 in pygame.event.get():
+                            if event2.type == pygame.QUIT:
+                                pygame.quit()
+                                quit()
+                            elif event2.type == pygame.MOUSEBUTTONDOWN:
+                                if (newmx >= 20 and newmx <= 220) and (newmy >= 20 and newmy <= 220):
+                                    ludoGame.n=ludoPrompt(gameDisplay,bg2,gattiselect)
+                                    if ludoGame.n==0:
+                                        back=True
+                                        break
+                                    else:
+                                        ludoGame.players=ludoPrompt(gameDisplay,bg2,playerselect)
+                                        ludoGame.main()
+                                elif (newmx >= 360 and newmx <= 560) and (newmy >= 20 and newmy <= 220):
+                                    snakesAndLadders.main()
+                            elif event2.type == pygame.KEYDOWN:
+                                if event2.key == pygame.K_BACKSPACE:
+                                    back=True
+                        if back==True:
+                            break
+                        pygame.display.update()
+
+                elif (mx >= 10 and mx <= 130) and (my >= 110 and my <= 160):
+                    gameRules(gameDisplay,bg3)
+                elif (mx >= 10 and mx <= 130) and (my >= 210 and my <= 260):
+                    pygame.quit()
+                    quit()
+            if event.type == pygame.QUIT:
+                pygame.quit()
         pygame.display.update()
-        clock.tick(FPS)
-
-#Draw current gatti positions+board
-def drawBoard():
-    gameDisplay.blit(board, (0, 0))
-    for p in xrange(n):
-        red_gatti[p].draw(([red_gatti[p].pos] + path_red)[position[0][p]])
-        yellow_gatti[p].draw(([yellow_gatti[p].pos] + path_yellow)[position[1][p]])
-        blue_gatti[p].draw(([blue_gatti[p].pos] + path_blue)[position[2][p]])
-        green_gatti[p].draw(([green_gatti[p].pos] + path_green)[position[3][p]])
 
 
 
-red_gatti=gattiInit(red,[big_rectangle / 4, big_rectangle / 4])
-green_gatti = gattiInit(green, [big_rectangle / 4, display_height - 3 * big_rectangle / 4])
-yellow_gatti = gattiInit(yellow, [display_width - 3 * big_rectangle / 4, big_rectangle / 4])
-blue_gatti = gattiInit(blue, [display_width - 3 * big_rectangle / 4, display_height - 3 * big_rectangle / 4])
-gameloop()
-pygame.display.quit()
-quit()
+if __name__=='__main__':
+    main()
+
+
+
+
+
+
+
+
+
+
+
