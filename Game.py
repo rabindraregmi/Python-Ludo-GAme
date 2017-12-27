@@ -267,7 +267,7 @@ def gameloop():
 
         pygame.display.update()
         clock.tick(FPS)
-
+#maile yaha change gareko chhu
 #Draw current gatti positions+board
 def drawBoard():
     gameDisplay.blit(board, (0, 0))
